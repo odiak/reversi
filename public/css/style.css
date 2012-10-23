@@ -1,0 +1,111 @@
+#wrapper {
+    margin: auto;
+    text-align: center;
+    font-family: Verdana;
+}
+
+a:link,
+a:visited {
+    color: #00c;
+}
+
+#sign-in,
+#sign-up,
+#main {
+    display: none;
+}
+
+#sign-in,
+#sign-up {
+    margin-top: 30px;
+}
+
+#sign-in p,
+#sign-up p {
+    margin: 10px 0;
+    font-size: 14px;
+}
+
+#game-start {
+    margin-bottom: 20px;
+}
+
+#board {
+    margin: auto;
+    border-collapse: collapse;
+    background: #070;
+}
+
+#board td {
+    border: 3px solid #000;
+    width: 50px;
+    height: 50px;
+}
+
+#board td > div {
+    margin: auto;
+    width: 46px;
+    height: 46px;
+    border-radius: 23px;
+    background: transparent;
+}
+
+#board td > div.black {
+    background: #000;
+}
+
+#board td > div.white {
+    background: #fff;
+}
+
+#board td > div.movable {
+    width: 20px;
+    height: 20px;
+    background: #aaa;
+    opacity: 0.7;
+}
+
+#board td:hover > div.movable {
+    background: #ddd;
+}
+
+#disc-count {
+    margin: 8px auto;
+}
+
+#disc-count .disc div {
+    width: 16px;
+    height: 16px;
+    border: 2px solid #000;
+    border-radius: 16px;
+}
+
+#disc-count .black .disc div {
+    background: #000;
+}
+
+#disc-count .white .disc div {
+    background: #fff;
+}
+
+#disc-count .count:before {
+    content: " : ";
+}
+
+#disc-count .current div {
+    width: 0;
+    height: 0;
+    border: 8px solid transparent;
+    border-left: 12px solid #888;
+    border-right: 4px solid transparent;
+    visibility: hidden;
+}
+
+#disc-count .current-color .current div {
+    visibility: visible;
+}
+
+#message {
+    margin-top: 8px;
+    font-size: 16px;
+}

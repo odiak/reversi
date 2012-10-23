@@ -1,0 +1,64 @@
+doctype 5
+html
+  head
+    meta(charset='utf-8')
+    title Reversi
+    link(rel='stylesheet', type='text/css', href='/css/style.css')
+    script(src='/socket.io/socket.io.js')
+    script(src='http://odiak.net/lib/jquery/jquery.js')
+    script(src='http://odiak.net/lib/jquery/plugins/jquery.create.js')
+    script(src='/js/main.js')
+  body
+    #wrapper
+      h1 Reversi
+      #user-count
+      #connecting Connecting to Server...
+      
+      #sign-in
+        form
+          p
+            input.username(type='text', placeholder='Username')
+          p
+            input.password(type='password', placeholder='Password')
+          p
+            input(type='submit', value='Sign in')
+          p 
+            | or 
+            a(href='#sign-up') sign up
+      
+      #sign-up
+        p 
+          | Username can contain only
+          br
+          | alphanumeric characters or underscore(_).
+        form
+          p
+            input.username(type='text', placeholder='Username')
+          p
+            input.password(type='password', placeholder='Password')
+          p
+            input(type='submit', value='Sign up')
+          p
+            | or 
+            a(href='#sign-in') sign in
+      
+      #main
+        input(type='button', value='New Game', id='game-start')
+        #board-wrap
+        table#disc-count
+          tr.black
+            td.current
+              div
+            td.disc
+              div
+            td.name
+            td.count
+          tr.white
+            td.current
+              div
+            td.disc
+              div
+            td.name
+            td.count
+      
+      #message
