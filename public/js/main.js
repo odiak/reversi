@@ -103,7 +103,8 @@
         socket.on('signed_in', function (name) {
             nameInput.val('');
             selfName = name;
-            register.hide();
+            signIn.hide();
+            signUp.hide();
             main.show();
             showMessage('Click the above button to start game.');
         });

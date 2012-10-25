@@ -216,6 +216,9 @@ var run = function (io) {
         
         socket.on('sign_in', function (username, password) {
             data.getUser(username, password, function (err, doc) {
+                if (err) {
+                    return;
+                }
                 var res = addPlayer(doc.name, socket);
                 if (res) {
                     name = doc.name;
