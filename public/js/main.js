@@ -100,7 +100,7 @@
             return false;
         });
         
-        socket.on('registered', function (name) {
+        socket.on('signed_in', function (name) {
             nameInput.val('');
             selfName = name;
             register.hide();

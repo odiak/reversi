@@ -31,9 +31,7 @@ var randomToken = function (n) {
     return res;
 };
 
-var registerPlayer = function (name, socket) {
-    if (!name) return false;
-    name += '';
+var addPlayer = function (name, socket) {
     if (name in players) return false;
     players[name] = {
         name: name,
@@ -181,6 +179,15 @@ var stopGame = function (name) {
     cleanUpGame(name);
 };
 
+var rname = /^\w+$/;
+
+var validateName = function (name) {
+    if (!name) {
+        return false;
+    }
+    return rname.test(name);
+};
+
 var run = function (io) {
     io.sockets.on('connection', function (socket) {
         var name = null;
@@ -208,10 +215,14 @@ var run = function (io) {
         });
         
         socket.on('sign_in', function (username, password) {
-            if (!username || !password) return;
-            
             data.getUser(username, password, function (err, doc) {
-                
+                var res = addPlayer(doc.name, socket);
+                if (res) {
+                    name = doc.name;
+                    socket.emit('signed_in', name);
+                } else {
+                    socket.emit('message', 'Signing in failed.');
+                }
             });
         });
         
@@ -219,9 +230,19 @@ var run = function (io) {
             if (!username || !password) return;
             
             data.getUser(username, function (err, doc) {
+                var res;
                 console.log(doc);
                 if (!doc) {
                     data.addUser(username, password);
+                    res = addPlayer(username, socket);
+                    if (res) {
+                        name = username;
+                        socket.emit('signed_in', name);
+                    } else {
+                        socket.emit('message', 'Signing in failed');
+                    }
+                } else {
+                    socket.emit('message', 'The name already exists.');
                 }
             });
         });
