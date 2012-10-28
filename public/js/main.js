@@ -27,6 +27,9 @@
     var message;
     var userCount;
     var discCount;
+    var log;
+    var messageLog;
+    var messageInput;
     
     var SIZE;
     var BLACK;
@@ -39,17 +42,20 @@
     var boardReady = false;
     
     var onLoad = function () {
-        connecting  = $('#connecting');
-        register    = $('#register');
-        signIn      = $('#sign-in');
-        signUp      = $('#sign-up');
-        main        = $('#main');
-        startButton = $('#game-start');
-        nameInput   = $('#name-input')
-        boardWrap   = $('#board-wrap');
-        message     = $('#message');
-        userCount   = $('#user-count');
-        discCount   = $('#disc-count');
+        connecting   = $('#connecting');
+        register     = $('#register');
+        signIn       = $('#sign-in');
+        signUp       = $('#sign-up');
+        main         = $('#main');
+        startButton  = $('#game-start');
+        nameInput    = $('#name-input')
+        boardWrap    = $('#board-wrap');
+        message      = $('#message');
+        userCount    = $('#user-count');
+        discCount    = $('#disc-count');
+        log          = $('#log');
+        messageLog   = $('#message-log');
+        messageInput = $('#log input[type=text]');
         
         socket.emit('ready');
         socket.emit('get_constants');
@@ -62,6 +68,15 @@
             renderBoard();
             boardReady = true;
         });
+        
+        var token = getSignInToken();
+        if (token) {
+            socket.emit('sign_in_with_token', token);
+        }
+        
+        messageInput.hide();
+        resizeMessageLog();
+        $(window).on('resize', resizeMessageLog);
         
         connecting.hide();
         signIn.show();
@@ -106,6 +121,8 @@
             signIn.hide();
             signUp.hide();
             main.show();
+            messageInput.show();
+            resizeMessageLog();
             showMessage('Click the above button to start game.');
         });
         
@@ -114,12 +131,18 @@
                 showMessage('Please wait a moment...');
                 return;
             }
-            console.log('start!');
             socket.emit('start_game');
         });
         
-        socket.on('message', function (text) {
-            showMessage(text);
+        messageInput.on('change', function () {
+            var text = $(this).val();
+            if (!text) return;
+            socket.emit('message', text);
+            $(this).val('');
+        })
+        
+        socket.on('message', function (text, name) {
+            showMessage(text, name);
         });
         
         socket.on('update_board', function (updates) {
@@ -149,6 +172,14 @@
         
         socket.on('set_disc_count', function (discs, names, currentColor) {
             setDiscCount(discs, names, currentColor);
+        });
+        
+        socket.on('tilt', function () {
+            $(document.body).css('webkit-transform', 'rotate(-1deg)');
+        });
+        
+        socket.on('set_sign_in_token', function (token) {
+            setSignInToken(token);
         });
     };
     
@@ -226,8 +257,26 @@
         updateBoard(updates);
     };
     
-    var showMessage = function (text) {
-        message.text(text);
+    var showMessage = function (text, name) {
+        var e = $.create('div');
+        text += '';
+        text.replace(/&/g, '&amp;');
+        text.replace(/</g, '&lt;');
+        text.replace(/>/g, '&gt;');
+        text.replace(/\n/g, '<br/>');
+        if (name) {
+            text = name + '> ' + text;
+        } else {
+            message.text(text);
+            text = '[info] ' + text;
+            e.addClass('strong');
+            setTimeout(function () {
+                e.removeClass('strong');
+            }, 500);
+        }
+        e.html(text);
+        messageLog.append(e);
+        messageLog.scrollTop(messageLog[0].scrollHeight);
     };
     
     var setMovablePos = function (movablePos) {
@@ -257,5 +306,30 @@
         } else {
             discCount.find('.white').addClass('current-color');
         }
+    };
+    
+    var getSignInToken = function () {
+        if (typeof localStorage !== 'object') return;
+        return localStorage.__signin_token;
+    };
+    
+    var setSignInToken = function (token) {
+        if (typeof localStorage !== 'object') return;
+        return localStorage.__signin_token = token;
+    };
+    
+    var resizeMessageLog = function () {
+        var w = messageLog.width();
+        if ($(window).width() <= 450 + w * 2) {
+            log.height(130);
+        } else {
+            log.height('')
+        }
+        
+        var h = log.height();
+        if (messageInput.css('display') !== 'none') {
+            h -= messageInput.outerHeight();
+        }
+        messageLog.height(h);
     };
 })();

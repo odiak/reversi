@@ -1,12 +1,16 @@
 #wrapper {
     margin: auto;
     text-align: center;
-    font-family: Verdana;
+    font-family: Helvetica;
 }
 
 a:link,
 a:visited {
     color: #00c;
+}
+
+h1 {
+    margin: 20px;
 }
 
 #sign-in,
@@ -27,6 +31,7 @@ a:visited {
 }
 
 #game-start {
+    margin-top: 10px;
     margin-bottom: 20px;
 }
 
@@ -38,15 +43,15 @@ a:visited {
 
 #board td {
     border: 3px solid #000;
-    width: 50px;
-    height: 50px;
+    width: 48px;
+    height: 48px;
 }
 
 #board td > div {
     margin: auto;
-    width: 46px;
-    height: 46px;
-    border-radius: 23px;
+    width: 44px;
+    height: 44px;
+    border-radius: 22px;
     background: transparent;
 }
 
@@ -108,4 +113,61 @@ a:visited {
 #message {
     margin-top: 8px;
     font-size: 16px;
+}
+
+#log {
+    width: 200px;
+    height: 100%;
+    padding: 0;
+    position: absolute;
+    right: 0px;
+    top: 0;
+    border-left: 1px solid #bbb;
+    border-bottom: 1px solid #bbb;
+    background: #f7f7f7;
+    overflow: hidden;
+}
+
+#log input[type=text] {
+    margin: 0;
+    padding: 7px;
+    border: none;
+    border-top: 1px solid #ddd;
+    outline: none;
+    width: 100%;
+    font-size: 13px;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    background: #fff;
+}
+
+#message-log {
+    margin: 0;
+    padding: 0;
+    overflow: scroll;
+    height: 100%;
+}
+
+#message-log div {
+    margin: 0;
+    padding: 5px 2px;
+    text-align: left;
+    font-size: 13px;
+    border-bottom: 1px solid #ddd;
+    background: #f5f6ff;
+}
+
+/*
+#message-log div:nth-child(even) {
+    background: #fff;
+}
+
+#message-log div:nth-child(odd) {
+    background: #f5f5f5;
+}
+*/
+
+#message-log .strong {
+    background: yellow !important;
 }

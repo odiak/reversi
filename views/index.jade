@@ -2,7 +2,7 @@ doctype 5
 html
   head
     meta(charset='utf-8')
-    title Reversi
+    title Reverse It!
     link(rel='stylesheet', type='text/css', href='/css/style.css')
     script(src='/socket.io/socket.io.js')
     script(src='http://odiak.net/lib/jquery/jquery.js')
@@ -10,7 +10,7 @@ html
     script(src='/js/main.js')
   body
     #wrapper
-      h1 Reversi
+      h1 Reverse It!
       #user-count
       #connecting Connecting to Server...
       
@@ -62,3 +62,6 @@ html
             td.count
       
       #message
+      #log
+        #message-log
+        input(type='text', placeholder='Type message')

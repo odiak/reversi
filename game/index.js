@@ -127,6 +127,7 @@ var clearBoard = function (name) {
         }
     }
     socket.emit('set_board', board);
+    socket.emit('set_movable_pos', []);
 };
 
 var confirm = function (socket, message, callback) {
@@ -188,6 +189,33 @@ var validateName = function (name) {
     return rname.test(name);
 };
 
+var commands = {};
+
+commands.testMessage = function (socket) {
+    for (var i = 0; i < 50; i++) {
+        socket.emit('message', 'this is test message ' + (i + 1));
+    }
+};
+
+commands.tilt = function (socket) {
+    socket.emit('tilt');
+};
+
+var execute = function (socket, str) {
+    var args = str.trim().slice(1).split(/\s+/);
+    var command = args[0];
+    args = args.slice(1);
+    console.log('command:', command);
+    switch (command) {
+    case 'test-message':
+        commands.testMessage(socket);
+        break;
+    case 'tilt':
+        commands.tilt(socket);
+        break;
+    }
+};
+
 var run = function (io) {
     io.sockets.on('connection', function (socket) {
         var name = null;
@@ -203,28 +231,51 @@ var run = function (io) {
             socket.emit('set_constants', constants);
         });
         
-        socket.on('register_name', function (_name) {
-            if (name) return;
-            var res = registerPlayer(_name, socket);
-            if (res) {
-                name = _name
-                socket.emit('registered', name);
-            } else {
-                socket.emit('message', 'You cannot use this name.');
-            }
-        });
-        
         socket.on('sign_in', function (username, password) {
             data.getUser(username, password, function (err, doc) {
                 if (err) {
                     return;
                 }
+                if (!doc) {
+                    socket.emit('message', 'Username or password is wrong.');
+                    return;
+                }
                 var res = addPlayer(doc.name, socket);
                 if (res) {
                     name = doc.name;
+                    socket.set('name', doc.name);
                     socket.emit('signed_in', name);
+                    data.getToken(name, function (token) {
+                        if (token) {
+                            socket.emit('set_sign_in_token', token);
+                        }
+                    });
                 } else {
                     socket.emit('message', 'Signing in failed.');
+                }
+            });
+        });
+        
+        socket.on('sign_in_with_token', function (token) {
+            console.log(token);
+            data.getUserByToken(token, function (err, doc) {
+                var res;
+                if (!err && doc) {
+                    console.log(doc);
+                    res = addPlayer(doc.name, socket);
+                    console.log(Object.keys(players));
+                    console.log(res);
+                    if (res) {
+                        name = doc.name;
+                        socket.set('name', name);
+                        socket.emit('signed_in', name);
+                        data.destroyToken(token);
+                        data.getToken(name, function (token) {
+                            if (token) {
+                                socket.emit('set_sign_in_token', token);
+                            }
+                        });
+                    }
                 }
             });
         });
@@ -240,7 +291,13 @@ var run = function (io) {
                     res = addPlayer(username, socket);
                     if (res) {
                         name = username;
+                        socket.set('name', username);
                         socket.emit('signed_in', name);
+                        data.getToken(name, function (token) {
+                            if (token) {
+                                socket.emit('set_sign_in_token', token);
+                            }
+                        });
                     } else {
                         socket.emit('message', 'Signing in failed');
                     }
@@ -248,6 +305,21 @@ var run = function (io) {
                     socket.emit('message', 'The name already exists.');
                 }
             });
+        });
+        
+        socket.on('message', function (text) {
+            if (!text) return;
+            text += '';
+            
+            if (text.trim().charAt(0) === '!') {
+                execute(socket, text);
+                return;
+            }
+            
+            socket.emit('message', text, name);
+            if (players[name] && players[name].game) {
+                players[name].opponent.socket.emit('message', text, name);
+            }
         });
         
         socket.on('start_game', function () {
