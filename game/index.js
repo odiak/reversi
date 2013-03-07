@@ -17,6 +17,7 @@ var constants = {
 };
 
 var data = require('./data');
+var strftime = require('strftime');
 
 var characters =
         'abcdefghijklmnopqrstuvwxyz' +
@@ -31,6 +32,17 @@ var randomToken = function (n) {
         res += characters[Math.random() * len | 0];
     }
     return res;
+};
+
+var DEBUG = true;
+
+var log = function () {
+    var a = arguments;
+    if (DEBUG) {
+        console.log(
+            '[' + strftime('%Y-%m-%d %H:%M:%S') + '] ' +
+            Array.prototype.slice.apply(a).join(' '));
+    }
 };
 
 var addPlayer = function (name, socket) {
@@ -109,6 +121,8 @@ var startGame = function (names) {
         } else {
             player.socket.emit('set_movable_pos', []);
         }
+        
+        log('game started!', name, '&', oppName);
     }
     updateDiscCount(names[0]);
     updateDiscCount(names[1]);
@@ -241,6 +255,8 @@ var run = function (io) {
         var name = null;
         
         userCount++;
+        log('connected!');
+        log('online users:', userCount);
         
         socket.on('ready', function () {
             socket.emit('set_user_count', userCount);
@@ -272,6 +288,7 @@ var run = function (io) {
                             socket.emit('set_sign_in_token', token);
                         }
                     });
+                    log('signed in! -', username);
                 } else {
                     socket.emit('message', 'Signing in failed.');
                 }
@@ -323,6 +340,7 @@ var run = function (io) {
                                 socket.emit('set_sign_in_token', token);
                             }
                         });
+                        log('signed up! -', username);
                     } else {
                         socket.emit('message', 'Signing in failed');
                     }
@@ -416,6 +434,8 @@ var run = function (io) {
             destoryPlayer(name);
             userCount--;
             socket.broadcast.emit('set_user_count', userCount);
+            log('disconnected!');
+            log('online users:', userCount);
         });
     });
 };

@@ -11,6 +11,7 @@
         "socket.io": "*",
         "events": "*",
         "mongoose": "*",
-        "socket.io-client": "*"
+        "socket.io-client": "*",
+        "strftime": "*"
     }
 }
