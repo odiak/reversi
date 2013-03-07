@@ -4,13 +4,13 @@ var http = require('http');
 var path = require('path');
 
 var app = express();
-var PORT = 3000;
+var PORT = process.argv[2] || 3000;
 
 app.configure(function () {
-    app.set('port', process.env.PORT || PORT);
+    app.set('port', PORT);
     app.set('views', __dirname + '/views');
     app.set('view engine', 'jade');
-    app.use(express.favicon());
+    app.use(express.favicon('public/favicon.ico'));
     app.use(express.logger('dev'));
     app.use(express.bodyParser());
     app.use(express.methodOverride());
