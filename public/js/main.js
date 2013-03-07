@@ -1,6 +1,6 @@
 (function () {
     var $ = jQuery;
-    var socket = io.connect('http://' + location.host);
+    var socket = io.connect('http://' + location.host + ':' + __PORT);
     
     var flags = 0; 
     var callback = function () {

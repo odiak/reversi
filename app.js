@@ -33,6 +33,7 @@ app.configure('production', function () {
     app.use(express.static(path.join(__dirname, 'public')));
 });
 
+routes.setPort(PORT);
 app.get('/', routes.index);
 
 var server = http.createServer(app);

@@ -9,6 +9,7 @@ html
     script(src='/socket.io/socket.io.js')
     script(src='http://odiak.net/lib/jquery/jquery.js')
     script(src='http://odiak.net/lib/jquery/plugins/jquery.create.js')
+    script= 'var __PORT = ' + port + ';'
     script(src='/js/main.js')
   body
     #wrapper
