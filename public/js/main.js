@@ -4,8 +4,7 @@
     
     var flags = 0; 
     var callback = function () {
-        flags--;
-        if (flags) return;
+        if (--flags) return;
         onLoad();
     };
     
@@ -140,8 +139,8 @@
             $(this).val('');
         })
         
-        socket.on('message', function (text) {
-            showMessage(text);
+        socket.on('message', function (text, autoHide) {
+            showMessage(text, autoHide);
         });
         
         socket.on('user_message', function (text, name) {
@@ -278,12 +277,26 @@
         updateBoard(updates);
     };
     
-    var showMessage  = function (text) {
+    var _updatedAt;
+    var showMessage  = function (text, autoHide) {
+        message.stop();
         message.text(text);
         message.addClass('strong');
+        _updatedAt = new Date;
         setTimeout(function () {
             message.removeClass('strong');
         }, 1300);
+        if (autoHide) {
+            setTimeout(function () {
+                console.log(new Date - _updatedAt);
+                if (new Date - _updatedAt >= 2500) {
+                    message.fadeOut(1000, function () {
+                        message.text('');
+                        message.show();
+                    });
+                }
+            }, 2500);
+        }
     };
     
     var showUserMessage = function (text, name) {

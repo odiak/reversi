@@ -373,12 +373,12 @@ var run = function (io) {
             var game = player.game;
             if (!game) return;
             if (game.currentColor !== player.color) {
-                socket.emit('message', 'It\'s not your turn.');
+                socket.emit('message', 'It\'s not your turn.', true);
                 return;
             }
             var res = game.move(point);
             if (!res) {
-                socket.emit('message', 'You cannot move there.');
+                socket.emit('message', 'You cannot move there.', true);
                 return;
             }
             var update = game.updateLog.slice(-1)[0];
