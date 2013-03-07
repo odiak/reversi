@@ -10,7 +10,6 @@ app.configure(function () {
     app.set('port', PORT);
     app.set('views', __dirname + '/views');
     app.set('view engine', 'jade');
-    app.use(express.favicon('public/favicon.ico'));
     app.use(express.bodyParser());
     app.use(express.methodOverride());
     app.use(app.router);
@@ -35,6 +34,10 @@ app.configure('production', function () {
 
 routes.setPort(PORT);
 app.get('/', routes.index);
+
+app.get('/webapp.txt', function (req, res) {
+    res.send('d43595293c412f858776d832a8cb4c25');
+});
 
 var server = http.createServer(app);
 
