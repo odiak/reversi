@@ -56,8 +56,13 @@ var addPlayer = function (name, socket) {
 };
 
 var destoryPlayer = function (name) {
+    var i;
     if (name in players) {
         delete players[name];
+        i = playerQueue.indexOf(name);
+        if (i != -1) {
+            playerQueue.splice(i, 1);
+        }
     }
 };
 
