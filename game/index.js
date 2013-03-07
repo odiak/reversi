@@ -1,3 +1,5 @@
+'use strict'
+
 var reversi = require('./reversi');
 var Reversi = reversi.Reversi;
 
@@ -51,6 +53,15 @@ var matchPlayers = function (name) {
     if (!(name in players)) return;
     if (playerQueue.indexOf(name) !== -1) return;
     
+    players[name].socket.emit('hide_message_log');
+    if (players[name].userMessageTo) {
+        if (players[name].userMessageTo.userMessageTo) {
+            delete players[name].userMessageTo.userMessageTo;
+        }
+        players[name].userMessageTo.socket.emit('hide_message_log');
+        delete players[name].userMessageTo;
+    }
+    
     var socket = players[name].socket;
     socket.emit('message', 'Finding another player...');
     
@@ -86,6 +97,13 @@ var startGame = function (names) {
         player.opponent = oppPlayer;
         player.socket.emit('message', 'Game started!');
         pushBoard(name);
+        
+        player.userMessageTo = oppPlayer;
+        player.socket.emit('clear_message_log');
+        player.socket.emit('show_message_log');
+        player.socket.emit('user_message',
+            'You can send messages to the opposite player.', '[System]');
+        
         if (player.color === game.currentColor) {
             player.socket.emit('set_movable_pos', game.movablePos);
         } else {
@@ -182,7 +200,7 @@ var stopGame = function (name) {
 
 var rname = /^\w+$/;
 
-var validateName = function (name) {
+var validName = function (name) {
     if (!name) {
         return false;
     }
@@ -205,7 +223,6 @@ var execute = function (socket, str) {
     var args = str.trim().slice(1).split(/\s+/);
     var command = args[0];
     args = args.slice(1);
-    console.log('command:', command);
     switch (command) {
     case 'test-message':
         commands.testMessage(socket);
@@ -213,7 +230,10 @@ var execute = function (socket, str) {
     case 'tilt':
         commands.tilt(socket);
         break;
+    default:
+        return false;;
     }
+    return true;
 };
 
 var run = function (io) {
@@ -245,6 +265,8 @@ var run = function (io) {
                     name = doc.name;
                     socket.set('name', doc.name);
                     socket.emit('signed_in', name);
+                    socket.emit('message',
+                        'Click the above button to start game.');
                     data.getToken(name, function (token) {
                         if (token) {
                             socket.emit('set_sign_in_token', token);
@@ -257,18 +279,16 @@ var run = function (io) {
         });
         
         socket.on('sign_in_with_token', function (token) {
-            console.log(token);
             data.getUserByToken(token, function (err, doc) {
                 var res;
                 if (!err && doc) {
-                    console.log(doc);
                     res = addPlayer(doc.name, socket);
-                    console.log(Object.keys(players));
-                    console.log(res);
                     if (res) {
                         name = doc.name;
                         socket.set('name', name);
                         socket.emit('signed_in', name);
+                        socket.emit('message',
+                            'Click the above button to start game.');
                         data.destroyToken(token);
                         data.getToken(name, function (token) {
                             if (token) {
@@ -282,10 +302,13 @@ var run = function (io) {
         
         socket.on('sign_up', function (username, password) {
             if (!username || !password) return;
+            if (!validName(username)) {
+                socket.emit('message', 'Invalid username.');
+                return;
+            }
             
             data.getUser(username, function (err, doc) {
                 var res;
-                console.log(doc);
                 if (!doc) {
                     data.addUser(username, password);
                     res = addPlayer(username, socket);
@@ -293,6 +316,8 @@ var run = function (io) {
                         name = username;
                         socket.set('name', username);
                         socket.emit('signed_in', name);
+                        socket.emit('message',
+                            'Click the above button to start game.');
                         data.getToken(name, function (token) {
                             if (token) {
                                 socket.emit('set_sign_in_token', token);
@@ -307,18 +332,19 @@ var run = function (io) {
             });
         });
         
-        socket.on('message', function (text) {
+        socket.on('user_message', function (text) {
             if (!text) return;
             text += '';
             
+            var res;
             if (text.trim().charAt(0) === '!') {
-                execute(socket, text);
-                return;
+                res = execute(socket, text);
+                if (res) return;
             }
             
-            socket.emit('message', text, name);
-            if (players[name] && players[name].game) {
-                players[name].opponent.socket.emit('message', text, name);
+            if (players[name].userMessageTo) {
+                players[name].socket.emit('user_message', text, name);
+                players[name].userMessageTo.socket.emit('user_message', text, name);
             }
         });
         
@@ -376,8 +402,16 @@ var run = function (io) {
         });
         
         socket.on('disconnect', function () {
-            if (players[name] && players[name].game) {
-                stopGame(name);
+            if (name && players[name]) {
+                if (players[name].userMessageTo &&
+                    players[name].userMessageTo.userMessageTo) {
+                    players[name].userMessageTo.socket
+                        .emit('hide_message_log');
+                    delete players[name].userMessageTo.userMessageTo;
+                }
+                if (players[name].game) {
+                    stopGame(name);
+                }
             }
             destoryPlayer(name);
             userCount--;

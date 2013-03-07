@@ -10,6 +10,7 @@
         "jade": "*",
         "socket.io": "*",
         "events": "*",
-        "mongoose": "*"
+        "mongoose": "*",
+        "socket.io-client": "*"
     }
 }

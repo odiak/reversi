@@ -74,10 +74,7 @@
             socket.emit('sign_in_with_token', token);
         }
         
-        messageInput.hide();
-        resizeMessageLog();
-        $(window).on('resize', resizeMessageLog);
-        
+        log.hide();
         connecting.hide();
         signIn.show();
         
@@ -122,8 +119,10 @@
             signUp.hide();
             main.show();
             messageInput.show();
-            resizeMessageLog();
-            showMessage('Click the above button to start game.');
+            
+            setTimeout(function () {
+                scrollTo(0, 0); // for Mobile Safari
+            }, 300);
         });
         
         startButton.on('click', function () {
@@ -137,12 +136,16 @@
         messageInput.on('change', function () {
             var text = $(this).val();
             if (!text) return;
-            socket.emit('message', text);
+            socket.emit('user_message', text);
             $(this).val('');
         })
         
-        socket.on('message', function (text, name) {
-            showMessage(text, name);
+        socket.on('message', function (text) {
+            showMessage(text);
+        });
+        
+        socket.on('user_message', function (text, name) {
+            showUserMessage(text, name);
         });
         
         socket.on('update_board', function (updates) {
@@ -159,6 +162,7 @@
         });
         
         socket.on('alert', function (message) {
+            showMessage(message);
             alert(message);
         });
         
@@ -181,6 +185,18 @@
         socket.on('set_sign_in_token', function (token) {
             setSignInToken(token);
         });
+        
+        socket.on('show_message_log', function () {
+            log.show();
+        });
+        
+        socket.on('hide_message_log', function () {
+            log.hide();
+        });
+        
+        socket.on('clear_message_log', function () {
+            messageLog.html('');
+        });
     };
     
     var renderBoard = function () {
@@ -201,14 +217,19 @@
         boardWrap.append(board);
         
         cells = board.find('td');
-        cells.on('mousedown', function () {
+        
+        var callback = function () {
             var cell = $(this);
             var i = cells.index(cell);
             var x = i % SIZE;
             var y = i / SIZE | 0;
             socket.emit('click', {x: x, y: y});
             return false;
-        });
+        };
+        
+        cells.on('mousedown', callback);
+        
+        cells.on('touchstart', callback);
     };
     
     var updateBoard = function (updates) {
@@ -257,7 +278,15 @@
         updateBoard(updates);
     };
     
-    var showMessage = function (text, name) {
+    var showMessage  = function (text) {
+        message.text(text);
+        message.addClass('strong');
+        setTimeout(function () {
+            message.removeClass('strong');
+        }, 1300);
+    };
+    
+    var showUserMessage = function (text, name) {
         var e = $.create('div');
         text += '';
         text.replace(/&/g, '&amp;');
@@ -266,13 +295,6 @@
         text.replace(/\n/g, '<br/>');
         if (name) {
             text = name + '> ' + text;
-        } else {
-            message.text(text);
-            text = '[info] ' + text;
-            e.addClass('strong');
-            setTimeout(function () {
-                e.removeClass('strong');
-            }, 500);
         }
         e.html(text);
         messageLog.append(e);
@@ -316,20 +338,5 @@
     var setSignInToken = function (token) {
         if (typeof localStorage !== 'object') return;
         return localStorage.__signin_token = token;
-    };
-    
-    var resizeMessageLog = function () {
-        var w = messageLog.width();
-        if ($(window).width() <= 450 + w * 2) {
-            log.height(130);
-        } else {
-            log.height('')
-        }
-        
-        var h = log.height();
-        if (messageInput.css('display') !== 'none') {
-            h -= messageInput.outerHeight();
-        }
-        messageLog.height(h);
     };
 })();

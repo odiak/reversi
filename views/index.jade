@@ -3,6 +3,8 @@ html
   head
     meta(charset='utf-8')
     title Reverse It!
+    meta(name='viewport', content='width=device-width; initial-scale=1.0; user-scalable=no;')
+    link(rel='stylesheet', type='text/css', href='http://odiak.net/lib/css/reset.css')
     link(rel='stylesheet', type='text/css', href='/css/style.css')
     script(src='/socket.io/socket.io.js')
     script(src='http://odiak.net/lib/jquery/jquery.js')
@@ -10,7 +12,7 @@ html
     script(src='/js/main.js')
   body
     #wrapper
-      h1 Reverse It!
+      h1 Online Reversi
       #user-count
       #connecting Connecting to Server...
       
@@ -43,7 +45,9 @@ html
             a(href='#sign-in') sign in
       
       #main
-        input(type='button', value='New Game', id='game-start')
+        input(type='button', value='Play a Match', id='game-start')
+        | &nbsp;
+        input(type='button', value='Play with AI', id='play-with-ai')
         #board-wrap
         table#disc-count
           tr.black
