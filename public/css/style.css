@@ -17,6 +17,7 @@ h1 {
 
 #sign-in,
 #sign-up,
+#anonymous,
 #main {
     display: none;
 }
@@ -27,7 +28,8 @@ h1 {
 }
 
 #sign-in p,
-#sign-up p {
+#sign-up p,
+#anonymous {
     margin: 10px 0;
     font-size: 14px;
 }

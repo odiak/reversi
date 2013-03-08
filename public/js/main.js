@@ -17,6 +17,7 @@
     var register;
     var signIn;
     var signUp;
+    var anonymous;
     var main;
     var startButton;
     var nameInput;
@@ -45,6 +46,7 @@
         register     = $('#register');
         signIn       = $('#sign-in');
         signUp       = $('#sign-up');
+        anonymous    = $('#anonymous');
         main         = $('#main');
         startButton  = $('#game-start');
         nameInput    = $('#name-input')
@@ -76,6 +78,7 @@
         log.hide();
         connecting.hide();
         signIn.show();
+        anonymous.show();
         
         signIn.find('a:link').on('click', function () {
             signIn.hide();
@@ -92,6 +95,11 @@
             signUp.find('.password').val('');
             signIn.show();
             signIn.find('.username').focus();
+            return false;
+        });
+        
+        anonymous.find('a:link').on('click', function () {
+            socket.emit('sign_in_as_anonymous');
             return false;
         });
         
@@ -116,6 +124,7 @@
             selfName = name;
             signIn.hide();
             signUp.hide();
+            anonymous.hide();
             main.show();
             messageInput.show();
             
@@ -330,7 +339,7 @@
     
     var setDiscCount = function (discs, names, currentColor) {
         var c = names[BLACK] === selfName ? BLACK : WHITE;
-        names[c] += '(you)';
+        names[c] += ' (you)';
         discCount.find('.black .name').text(names[BLACK]);
         discCount.find('.black .count').text(discs[BLACK] + '');
         discCount.find('.white .name').text(names[WHITE]);

@@ -22,7 +22,7 @@ var strftime = require('strftime');
 var characters =
         'abcdefghijklmnopqrstuvwxyz' +
         'ABCDEFGHIJKLMNOPQRSTUVWXYZ' +
-        '0123456789';
+        '0123456789_';
 
 var randomToken = function (n) {
     var i, len, res;
@@ -32,6 +32,12 @@ var randomToken = function (n) {
         res += characters[Math.random() * len | 0];
     }
     return res;
+};
+
+var generateAnonymousName = function () {
+    var name = '@anonymous_';
+    for (var n = 0; players[name + n]; n++);
+    return name + n;
 };
 
 var DEBUG = true;
@@ -207,6 +213,8 @@ var endGame = function (name) {
         alert(player.socket, loseMessage);
         alert(player.opponent.socket, winMessage);
     }
+    player.socket.emit('game_ended');
+    player.opponent.socket.emit('game_ended');
     cleanUpGame(name);
 };
 
@@ -214,6 +222,7 @@ var stopGame = function (name) {
     var opponent = players[name].opponent;
     alert(opponent.socket, 'The opponent player disconnected.\n' +
             'The game was stopped.');
+    opponent.socket.emit('game_ended');
     cleanUpGame(name);
 };
 
@@ -273,6 +282,7 @@ var run = function (io) {
         });
         
         socket.on('sign_in', function (username, password) {
+            if (name) return;
             data.getUser(username, password, function (err, doc) {
                 if (err) {
                     return;
@@ -301,6 +311,7 @@ var run = function (io) {
         });
         
         socket.on('sign_in_with_token', function (token) {
+            if (name) return;
             data.getUserByToken(token, function (err, doc) {
                 var res;
                 if (!err && doc) {
@@ -323,7 +334,20 @@ var run = function (io) {
             });
         });
         
+        socket.on('sign_in_as_anonymous', function () {
+            if (name) return;
+            name = generateAnonymousName();
+            var res = addPlayer(name, socket);
+            if (res) {
+                socket.set('name', name);
+                socket.emit('signed_in', name);
+                socket.emit('Click the above button to star game.');
+                log('signed in! -', name);
+            }
+        });
+        
         socket.on('sign_up', function (username, password) {
+            if (name) return;
             if (!username || !password) return;
             if (!validName(username)) {
                 socket.emit('message', 'Invalid username.');
