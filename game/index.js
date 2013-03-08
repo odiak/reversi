@@ -317,6 +317,7 @@ var run = function (io) {
                                 socket.emit('set_sign_in_token', token);
                             }
                         });
+                        log('signed in! -', name);
                     }
                 }
             });
